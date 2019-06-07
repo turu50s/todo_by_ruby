@@ -9,7 +9,11 @@ class Todo
 
   def initialize
     @tasks = []
-    @id = 0
+    @name = ""
+    @contents = ""
+    @priority = 0
+    @deadline = Date.new(2019,06, 02)
+    @created_at = Date.today
   end
 
   def index
@@ -17,13 +21,13 @@ class Todo
       puts "登録されているタスクはありません"
     else
       puts "[一覧]"
-      @tasks.each do |task|
+      @tasks.each.each.with_index(1) do |task, i|
         puts <<~TEXT
-        No.#{task.id}
+        No.#{i}
         タスク名:#{task.name}
         内容:#{task.contents}
         優先順位:#{task.priority}
-        期限:#{task.limit}
+        期限:#{task.deadline}
         TEXT
       end
     end
@@ -32,7 +36,7 @@ class Todo
   def show
     puts "詳細表示するタスクを選んでください"
     print "タスクNo:"
-    task_num = gets.chomp.to_i - 1
+    task_num = gets.chomp.to_i - 1 #TODO: いい書き方？(show)
     
     task = @tasks[task_num]
     
@@ -41,52 +45,57 @@ class Todo
     タスク名:#{task.name}
     内容:#{task.contents}
     優先順位:#{task.priority}
-    期限:#{task.limit}
+    期限:#{task.deadline}
     作成日:#{task.created_at}
     TEXT
   end
   
   def create
-    @id += 1
+    
     puts "タスクを登録してください"
     print "名前:"
-    name = gets.chomp
+    @name = gets.chomp
     print "内容:"
-    contents = gets.chomp
+    @contents = gets.chomp
     print "優先度(1-5):"
-    priority = gets.chomp
+    @priority = gets.chomp
     print "期限(月):"
     month = gets.chomp.to_i
     print "期限(日):"
     day = gets.chomp.to_i
     date = Date.today
     year = date.year
+    @deadline = Date.new(year, month, day)
+    @created_at = Date.today
     
-    @tasks << Task.new(@id, name, contents, priority, Date.new(year, month, day), Date.today)
+    
+    @tasks << Task.new(@name, @contents, @priority, @deadline, @created_at)
   end
   
   def update
     puts "どのタスクを更新しますか？"
     print "タスクNo:"
     selected_num = gets.chomp.to_i
-    index_num = selected_num - 1
+    index_num = selected_num - 1  #TODO: いい書き方？(update)
     task = @tasks[index_num]
 
     puts "タスクを更新してください"
     print "名前:"
-    name = gets.chomp
+    @name = gets.chomp
     print "内容:"
-    contents = gets.chomp
+    @contents = gets.chomp
     print "優先度(1-5):"
-    priority = gets.chomp
+    @priority = gets.chomp
     print "期限(月):"
     month = gets.chomp.to_i
     print "期限(日):"
     day = gets.chomp.to_i
     date = Date.today
     year = date.year
+    @deadline = Date.new(year, month, day)
+    @created_at = Date.today
     
-    @tasks[index_num] = Task.new(@id, name, contents, priority, Date.new(year, month, day), Date.today)
+    @tasks[index_num] = Task.new(@name, @contents, @priority, @deadline, @created_at)
 
   end
   
@@ -94,7 +103,7 @@ class Todo
     puts "削除するタスクを選んでください"
     print "タスクNo:"
     selected_num = gets.chomp.to_i
-    index_num = selected_num - 1
+    index_num = selected_num - 1  #TODO: いい書き方？(delete)
     task = @tasks[index_num]
 
     puts <<~TEXT
@@ -102,7 +111,7 @@ class Todo
       タスク名:#{task.name}
       内容:#{task.contents}
       優先順位:#{task.priority}
-      期限:#{task.limit}
+      期限:#{task.deadline}
       作成日:#{task.created_at}
 
       はい => y
@@ -135,20 +144,19 @@ class Todo
 end
 
 class Task
-  attr_accessor :id, :name, :contents, :priority, :limit, :created_at
+  attr_accessor :name, :contents, :priority, :deadline, :created_at
 
-  def initialize(id, name, contents, priority, limit, created_at)
-    self.id = id
+  def initialize(name, contents, priority, deadline, created_at)
     self.name = name
     self.contents = contents
     self.priority = priority
-    self.limit = limit
+    self.deadline = deadline
     self.created_at = created_at
   end
 
 end
 
-todo = Todo.new
+@todo = Todo.new
 
 
 loop do
@@ -157,22 +165,26 @@ loop do
   
   【タスク管理】
   一覧 => 1
-  登録 => 2
-  削除 => 3
-  詳細 => 4
+  詳細 => 2
+  登録 => 3
+  更新 => 4
+  削除 => 5
   
   TEXT
+
+  print "No:"
+  selected_num = gets.chomp.to_i
   
-  select = gets.chomp.to_i
-  
-  case select
+  case selected_num
   when 1
-    todo.index
+    @todo.index
   when 2
-    todo.create
+    @todo.show
   when 3
-    todo.delete
+    @todo.create
   when 4
-    todo.show
+    @todo.update
+  when 5
+    @todo.delete
   end
 end
