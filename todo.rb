@@ -1,13 +1,14 @@
 require 'date'
 require 'active_support/core_ext/time/calculations'
 require 'thor'
-require 'pry'
+require './Task.rb'
 
 class Todo
 
   attr_accessor :tasks
 
   def initialize
+    @id = 0
     @tasks = []
     @name = ""
     @contents = ""
@@ -21,9 +22,9 @@ class Todo
       puts "登録されているタスクはありません"
     else
       puts "[一覧]"
-      @tasks.each.each.with_index(1) do |task, i|
+      @tasks.each do |task|
         puts <<~TEXT
-        No.#{i}
+        No.#{task.id}
         タスク名:#{task.name}
         内容:#{task.contents}
         優先順位:#{task.priority}
@@ -36,23 +37,26 @@ class Todo
   def show
     puts "詳細表示するタスクを選んでください"
     print "タスクNo:"
-    task_num = gets.chomp.to_i - 1 #TODO: いい書き方？(show)
-    
-    task = @tasks[task_num]
-    
-    puts <<~TEXT
-    [詳細]
-    タスク名:#{task.name}
-    内容:#{task.contents}
-    優先順位:#{task.priority}
-    期限:#{task.deadline}
-    作成日:#{task.created_at}
-    TEXT
+    result = find_task_id(task_args)
+
+    if @tasks.size != 0
+      puts <<~TEXT
+      [詳細]
+      No.#{result.id}
+      タスク名:#{result.name}
+      内容:#{result.contents}
+      優先順位:#{result.priority}
+      期限:#{result.deadline}
+      作成日:#{result.created_at}
+      TEXT
+    else
+      puts "登録されたタスクはありません"
+    end
   end
   
   def create
-    
     puts "タスクを登録してください"
+    @id += 1
     print "名前:"
     @name = gets.chomp
     print "内容:"
@@ -68,17 +72,15 @@ class Todo
     @deadline = Date.new(year, month, day)
     @created_at = Date.today
     
-    
-    @tasks << Task.new(@name, @contents, @priority, @deadline, @created_at)
+    @tasks << Task.new(@id, @name, @contents, @priority, @deadline, @created_at)
   end
   
   def update
     puts "どのタスクを更新しますか？"
     print "タスクNo:"
-    selected_num = gets.chomp.to_i
-    index_num = selected_num - 1  #TODO: いい書き方？(update)
-    task = @tasks[index_num]
 
+    task = find_task_id(task_args)
+    
     puts "タスクを更新してください"
     print "名前:"
     @name = gets.chomp
@@ -95,36 +97,43 @@ class Todo
     @deadline = Date.new(year, month, day)
     @created_at = Date.today
     
-    @tasks[index_num] = Task.new(@name, @contents, @priority, @deadline, @created_at)
+    
+    task.name = @name
+    task.contents = @contents
+    task.priority = @priority
+    task.deadline = @deadline
+    task.created_at = @created_at
 
   end
   
   def delete
     puts "削除するタスクを選んでください"
     print "タスクNo:"
-    selected_num = gets.chomp.to_i
-    index_num = selected_num - 1  #TODO: いい書き方？(delete)
-    task = @tasks[index_num]
 
+    result = find_task_id(task_args)
+    
     puts <<~TEXT
-      以下のタスクを削除しますか？
-      タスク名:#{task.name}
-      内容:#{task.contents}
-      優先順位:#{task.priority}
-      期限:#{task.deadline}
-      作成日:#{task.created_at}
-
-      はい => y
-      いいえ => n
+    以下のタスクを削除しますか？
+    タスク名:#{result.name}
+    内容:#{result.contents}
+    優先順位:#{result.priority}
+    期限:#{result.deadline}
+    作成日:#{result.created_at}
+    
+    はい => y
+    いいえ => n
     
     TEXT
     
     loop do
+      
       print "入力:"
       command = gets.chomp
       
       if command == 'y'
-        @tasks.delete_at(index_num)
+        task = @tasks.delete_if do |task|
+          task.id == result.id
+        end
         puts "削除しました"
         break
       elsif command == 'n'
@@ -141,50 +150,17 @@ class Todo
       end
     end
   end
-end
 
-class Task
-  attr_accessor :name, :contents, :priority, :deadline, :created_at
+  private
 
-  def initialize(name, contents, priority, deadline, created_at)
-    self.name = name
-    self.contents = contents
-    self.priority = priority
-    self.deadline = deadline
-    self.created_at = created_at
+  def find_task_id(tasks)
+    @tasks.find do |task|
+      task.id == tasks[:index_num]
+    end
   end
 
-end
-
-@todo = Todo.new
-
-
-loop do
-
-  puts <<~TEXT
-  
-  【タスク管理】
-  一覧 => 1
-  詳細 => 2
-  登録 => 3
-  更新 => 4
-  削除 => 5
-  
-  TEXT
-
-  print "No:"
-  selected_num = gets.chomp.to_i
-  
-  case selected_num
-  when 1
-    @todo.index
-  when 2
-    @todo.show
-  when 3
-    @todo.create
-  when 4
-    @todo.update
-  when 5
-    @todo.delete
+  def task_args
+    index_num = gets.chomp.to_i
+    {tasks: @tasks, index_num: index_num}
   end
 end
