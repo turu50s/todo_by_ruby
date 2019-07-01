@@ -1,40 +1,34 @@
 require 'pry'
 require './Todo.rb'
+require './dialog.rb'
 
-@todo = Todo.new
+class Main
+  extend Dialog 
 
-INDEX  = 1
-SHOW   = 2
-CREATE = 3
-UPDATE = 4
-DELETE = 5
+  @todo = Todo.new
 
-loop do
-
-  puts <<~TEXT
+  INDEX  = 1
+  SHOW   = 2
+  CREATE = 3
+  UPDATE = 4
+  DELETE = 5
   
-  【タスク管理】
-  一覧 => 1
-  詳細 => 2
-  登録 => 3
-  更新 => 4
-  削除 => 5
-  
-  TEXT
-
-  print "No:"
-  selected_num = gets.chomp.to_i
-  
-  case selected_num
-  when INDEX
-    @todo.index
-  when SHOW
-    @todo.show
-  when CREATE
-    @todo.create
-  when UPDATE
-    @todo.update
-  when DELETE
-    @todo.delete
+  loop do
+    select_command
+    print "No:"
+    selected_num = gets.chomp.to_i
+    
+    case selected_num
+    when INDEX
+      @todo.index
+    when SHOW
+      @todo.show
+    when CREATE
+      @todo.create
+    when UPDATE
+      @todo.update
+    when DELETE
+      @todo.delete
+    end
   end
 end

@@ -2,8 +2,11 @@ require 'date'
 require 'active_support/core_ext/time/calculations'
 require 'thor'
 require './Task.rb'
+require './dialog.rb'
 
 class Todo
+
+  include Dialog
 
   attr_accessor :tasks
 
@@ -17,19 +20,14 @@ class Todo
     @created_at = Date.today
   end
 
+  # タスクの一覧表示
   def index
     if @tasks.empty?
-      puts "登録されているタスクはありません"
+      no_registered_task_message
     else
       puts "[一覧]"
       @tasks.each do |task|
-        puts <<~TEXT
-        No.#{task.id}
-        タスク名:#{task.name}
-        内容:#{task.contents}
-        優先順位:#{task.priority}
-        期限:#{task.deadline}
-        TEXT
+        task_details_message(task)
       end
     end
   end
@@ -37,18 +35,10 @@ class Todo
   def show
     puts "詳細表示するタスクを選んでください"
     print "タスクNo:"
-    result = find_task_id(task_args)
+    task = find_task_id(task_args)
 
     if @tasks.size != 0
-      puts <<~TEXT
-      [詳細]
-      No.#{result.id}
-      タスク名:#{result.name}
-      内容:#{result.contents}
-      優先順位:#{result.priority}
-      期限:#{result.deadline}
-      作成日:#{result.created_at}
-      TEXT
+      task_overview_message(task)
     else
       puts "登録されたタスクはありません"
     end
