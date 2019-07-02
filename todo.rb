@@ -40,7 +40,7 @@ class Todo
     if @tasks.size != 0
       task_overview_message(task)
     else
-      puts "登録されたタスクはありません"
+      no_registered_task_message
     end
   end
   
@@ -87,13 +87,11 @@ class Todo
     @deadline = Date.new(year, month, day)
     @created_at = Date.today
     
-    
     task.name = @name
     task.contents = @contents
     task.priority = @priority
     task.deadline = @deadline
-    task.created_at = @created_at
-
+    task.created_at = @created_at 
   end
   
   def delete
@@ -101,44 +99,21 @@ class Todo
     print "タスクNo:"
 
     result = find_task_id(task_args)
+    delete_confirm_message(result)
     
-    puts <<~TEXT
-    以下のタスクを削除しますか？
-    タスク名:#{result.name}
-    内容:#{result.contents}
-    優先順位:#{result.priority}
-    期限:#{result.deadline}
-    作成日:#{result.created_at}
-    
-    はい => y
-    いいえ => n
-    
-    TEXT
-    
+    command = nil
     loop do
-      
       print "入力:"
       command = gets.chomp
-      
       if command == 'y'
-        task = @tasks.delete_if do |task|
-          task.id == result.id
-        end
-        puts "削除しました"
+        task = tasks.delete_if { |task| task.id == result.id }
         break
       elsif command == 'n'
-        puts "削除をキャンセルしました"
         break
-      else
-        puts <<~TEXT 
-          無効なコマンドです"
-          もう一度入力をお願いします
-
-          はい => y
-          いいえ => n
-        TEXT
       end
+      delete_result_message(command)
     end
+    delete_result_message(command)
   end
 
   private
